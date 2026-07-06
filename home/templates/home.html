@@ -15,12 +15,13 @@
         <p class="text-gray-600 mb-6">Це твій майбутній Snapchat на Django.</p>
         
         <div class="space-y-3">
-            <a href="/admin/" class="block w-full bg-black text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-800 transition">
-                Увійти в Адмінку
+            <a href="{% url 'register' %}" class="block w-full bg-black text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-800 transition text-center no-underline">
+                Зареєструватися
             </a>
-            <div class="text-xs text-gray-400 pt-2">
-                Гілка: <span class="bg-gray-100 px-2 py-1 rounded font-mono text-gray-600">home</span>
-            </div>
+            
+            <a href="{% url 'login' %}" class="block w-full bg-gray-100 text-gray-800 font-bold py-3 px-4 rounded-xl hover:bg-gray-200 transition text-center no-underline border border-gray-300">
+                Увійти в акаунт
+            </a>
         </div>
     </div>
 

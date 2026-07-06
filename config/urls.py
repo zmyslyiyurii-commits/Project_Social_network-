@@ -16,9 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from home.views import home_view
+from home.views import home_view, openhome_view
+from users.views import register_view, login_view
+from django.contrib.auth import views as auth_views
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home_view, name='home'),  # Головна сторінка сайту
+    path('register/', register_view, name='register'),
+    path('openhome/', openhome_view, name='openhome'),
+    path('login/', login_view, name='login'),
 ]
