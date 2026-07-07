@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm  # кастомна форма реєстрації
+from django.contrib.auth.decorators import login_required
+from .models import Profile
 
 # ФУНКЦІЯ РЕЄСТРАЦІЇ (яку зараз не бачить Django)
 def register_view(request):
@@ -26,3 +28,9 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
+
+@login_required
+def profile_view(request):
+    # Оскільки юзер авторизований, ми передаємо його профіль у шаблон
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    return render(request, 'profile.html', {'profile': profile})

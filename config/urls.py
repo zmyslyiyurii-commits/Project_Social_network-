@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from home.views import home_view, openhome_view
-from users.views import register_view, login_view
+from users.views import register_view, login_view, profile_view
 from django.contrib.auth import views as auth_views
 
 
@@ -27,4 +27,5 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('openhome/', openhome_view, name='openhome'),
     path('login/', login_view, name='login'),
+    path('profile/', profile_view, name='profile'),
 ]
