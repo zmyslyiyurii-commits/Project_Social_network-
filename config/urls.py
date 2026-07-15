@@ -16,16 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from home.views import home_view, openhome_view
-from users.views import register_view, login_view, profile_view
-from django.contrib.auth import views as auth_views
-
+# Імпортуємо нові класи-в'юшки замість старих функцій
+from home.views import HomeView, OpenHomeView
+from users.views import RegisterView, CustomLoginView, ProfileView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home_view, name='home'),  # Головна сторінка сайту
-    path('register/', register_view, name='register'),
-    path('openhome/', openhome_view, name='openhome'),
-    path('login/', login_view, name='login'),
-    path('profile/', profile_view, name='profile'),
+    # Головна сторінка сайту
+    path('', HomeView.as_view(), name='home'),
+    path('openhome/', OpenHomeView.as_view(), name='openhome'),
+    # Авторизація та профілі
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', CustomLoginView.as_view(), name='login'),
+    path('profile/', ProfileView.as_view(), name='profile'),
 ]
