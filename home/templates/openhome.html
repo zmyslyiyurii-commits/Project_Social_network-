@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapchat Web</title>
+    <!-- Підключаємо Tailwind CSS через CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/openhome.css">
+</head>
+<body class="bg-[#0b0b0b] text-white font-sans h-screen overflow-hidden select-none">
+    <!-- ГОЛОВНИЙ КОНТЕЙНЕР НА ВЕСЬ ЕКРАН ПК -->
+    <div class="flex h-full w-full">
+        <!-- ================= ЛІВА ПАНЕЛЬ (ЧАТИ ТА НАВІГАЦІЯ) ================= -->
+        <aside class="w-[380px] min-w-[380px] h-full bg-[#121212] border-r border-[#262626] flex flex-col justify-between">
+            <!-- 1. Верхня шапка  -->
+            <div class="p-4 border-b border-[#262626]">
+                <div class="flex items-center justify-between mb-4">
+                    <!-- Аватарка профілю  -->
+                    <button class="w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"/><circle cx="12" cy="11" r="4"/><circle cx="12" cy="12" r="10"/></svg>
+                    </button>
+                    <!-- Заголовок розділу -->
+                    <h1 class="text-xl font-bold tracking-wide">Чат</h1>
+                    <!-- Праві кнопки керування -->
+                    <div class="flex items-center space-x-2">
+                        <!-- Кнопка пошуку -->
+                        <button class="w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+                        </button>
+                        <!-- Кнопка додати в друзі -->
+                        <button class="w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                        </button>
+                        <!-- Кнопка меню  -->
+                        <button class="w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-text-align-justify"><path d="M3 5h18"/><path d="M3 12h18"/><path d="M3 19h18"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Швидкі фільтри чатів -->
+                <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
+                    <span class="px-3 py-1.5 rounded-full bg-[#1e5eb8] text-white font-medium cursor-pointer">Всі</span>
+                    <span class="px-3 py-1.5 rounded-full bg-[#2f2f2f] text-gray-300 hover:bg-[#3d3d3d] transition cursor-pointer">Групи</span>
+                    <span class="px-3 py-1.5 rounded-full bg-[#2f2f2f] text-gray-300 hover:bg-[#3d3d3d] transition cursor-pointer">Непрочитані</span>
+                    <span class="px-3 py-1.5 rounded-full bg-[#2f2f2f] text-gray-300 hover:bg-[#3d3d3d] transition cursor-pointer">Найкращі</span>
+                </div>
+            </div>
+
+            <!-- 2. Середня частина: Список друзів  -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+                
+                <!-- Картка Олега -->
+                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-[#1c1c1c] cursor-pointer transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-lg font-bold text-black">О</div>
+                        <div>
+                            <h4 class="font-semibold text-sm">Олег</h4>
+                            <p class="text-xs text-gray-400 flex items-center">
+                                <span class="w-2.5 h-2.5 border-2 border-blue-500 rounded-sm inline-block mr-1"></span> Відкрито від Alex • 20хв
+                            </p>
+                        </div>
+                    </div>
+                    <button class="text-gray-500 hover:text-white transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></svg>
+                    </button>
+                </div>
+
+                <!-- Заглушка порожнього списку -->
+                <div class="p-4 text-center text-gray-500 text-xs">
+                    Кінець списку чатів
+                </div>
+
+            </div>
+
+            <!-- 3. Нижня панель навігації -->
+            <nav class="h-16 border-t border-[#262626] bg-[#121212] flex items-center justify-around px-2 text-gray-400">
+                <!-- Кнопка Мапи -->
+                <button class="flex flex-col items-center justify-center flex-1 py-1 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                </button>
+                <!-- Кнопка Повідомлень  -->
+                <button class="flex flex-col items-center justify-center flex-1 py-1 text-[#fffc00] transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+                </button>
+                <!-- Кнопка Камери -->
+                <button class="flex flex-col items-center justify-center flex-1 py-1 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></svg>
+                </button>
+                <!-- Кнопка Друзів -->
+                <button class="flex flex-col items-center justify-center flex-1 py-1 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
+                </button>
+                <!-- Кнопка Історій (Медіа) -->
+                <button class="flex flex-col items-center justify-center flex-1 py-1 hover:text-white transition relative">
+                    <span class="absolute top-2.5 right-6 w-2.5 h-2.5 bg-[#ff3b30] rounded-full ring-2 ring-[#121212]"></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- ================= ПРАВА (ЦЕНТРАЛЬНА) ЧАСТИНА ================= -->
+        <main class="flex-1 h-full bg-[#1e1e1e] flex flex-col items-center justify-center relative">
+            
+            <div class="text-center space-y-4">
+                <div class="w-24 h-24 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[#fffc00] mx-auto shadow-lg ring-4 ring-[#252525]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-200">Почніть спілкування</h3>
+                <p class="text-sm text-gray-500 max-w-sm">Оберіть друга зі списку ліворуч, щоб переглянути його снапи або надіслати нові повідомлення.</p>
+            </div>
+
+            <div class="absolute bottom-6 right-6 text-xs text-gray-600 tracking-wider">
+                SNAPCHAT WEB 
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+</html>
