@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import uuid
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class User(AbstractUser):
     # Тут ми наслідуємо всі стандартні поля (username, email, password...)
@@ -35,6 +36,39 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"Профіль користувача {self.user.username}"
+    
+class Snap(models.Model):
+    # Налаштовуємо варіанти статусів
+    STATUS_CHOICES = [
+        ('sent', 'Відправлено'),
+        ('opened', 'Відкрито'),
+    ]
+    # Відправник та отримувач
+    # related_name обов'язкові, щоб Django розумів різницю між відправленими та отриманими снапами користувача
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_snaps')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_snaps')
+    # Медіа-файл (завантажується в окрему папку 'snaps/')
+    media_file = models.FileField(upload_to='snaps/')
+    # Тривалість перегляду: від 1 до 10 секунд, або null (None) для значення "безлімітно"
+    duration = models.IntegerField(
+        null=True, 
+        blank=True, 
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Тривалість від 1 до 10 секунд. Залиште порожнім для безлімітного перегляду."
+    )
+    # Статус снапу (за замовчуванням — відправлено)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='sent')
+    # Час створення
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']  # Нові снапи будуть зверху
+        verbose_name = "Снап"
+        verbose_name_plural = "Снапи"
+
+    def __str__(self):
+        duration_str = f"{self.duration}s" if self.duration else "безлімітно"
+        return f"Снап від {self.sender} до {self.receiver} (Час: {duration_str}) - {self.get_status_display()}"
     
 class Friendship(models.Model):
     STATUS_CHOICES = [
