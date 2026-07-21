@@ -19,6 +19,8 @@ from django.urls import path
 # Імпортуємо нові класи-в'юшки замість старих функцій
 from home.views import HomeView, OpenHomeView
 from users.views import RegisterView, CustomLoginView, ProfileView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,3 +32,6 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('profile/', ProfileView.as_view(), name='profile'),
 ]
+# Обслуговування медіафайлів локально під час розробки
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
