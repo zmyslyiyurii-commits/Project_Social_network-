@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, Profile
+from .models import User, Profile, Snap
 
 #  ФОРМА РЕЄСТРАЦІЇ КОРИСТУВАЧА
 class CustomUserCreationForm(UserCreationForm):
@@ -71,3 +71,34 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['avatar']
+
+
+#  ФОРМА ВІДПРАВКИ СНАПУ
+class SendSnapForm(forms.ModelForm):
+    class Meta:
+        model = Snap
+        fields = ['receiver', 'media_file', 'duration']
+
+    def __init__(self, *args, **kwargs):
+        # Отримуємо поточного юзера з аргументів для фільтрації списку друзів
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # Фільтруємо поле receiver тільки підтвердженими друзями
+        if user:
+            self.fields['receiver'].queryset = user.get_friends()
+
+        self.fields['receiver'].label = "Отримувач (Друг)"
+        self.fields['media_file'].label = "Медіа-файл (Фото/Відео)"
+        self.fields['duration'].label = "Таймер перегляду (1-10 сек)"
+
+        input_classes = 'w-full bg-slate-800 text-white rounded-xl p-3 border border-slate-700 focus:outline-none focus:border-yellow-400'
+
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({'class': input_classes})
+
+        self.fields['duration'].widget.attrs.update({
+            'placeholder': 'Безлімітно (або вкажи від 1 до 10)',
+            'min': '1',
+            'max': '10'
+        })

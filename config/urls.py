@@ -15,23 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-# Імпортуємо нові класи-в'юшки замість старих функцій
-from home.views import HomeView, OpenHomeView
-from users.views import RegisterView, CustomLoginView, ProfileView
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from home.views import HomeView, OpenHomeView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Головна сторінка сайту
+    # Головна сторінка
     path('', HomeView.as_view(), name='home'),
     path('openhome/', OpenHomeView.as_view(), name='openhome'),
-    # Авторизація та профілі
-    path('register/', RegisterView.as_view(), name='register'),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('profile/', ProfileView.as_view(), name='profile'),
+    # Модуль користувачів та снапів (підключаємо urls.py з додатка users)
+    path('', include('users.urls')),
 ]
-# Обслуговування медіафайлів локально під час розробки
+
+# Обслуговування медіафайлів під час розробки
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
