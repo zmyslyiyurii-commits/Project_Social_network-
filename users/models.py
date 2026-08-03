@@ -30,7 +30,8 @@ class User(AbstractUser):
 # Динамічна функція для створення унікальної назви файлу аватара
 def user_avatar_path(instance, filename):
     ext = filename.split('.')[-1]
-    filename = f"{instance.snap_code}.{ext}"
+    # Використовуємо окремий UUID, щоб уникнути помилок до збереження snap_code
+    filename = f"{uuid.uuid4().hex}.{ext}"
     return os.path.join('avatars/', filename)
 
 
@@ -120,14 +121,11 @@ class Friendship(models.Model):
         return f"{self.sender.username} -> {self.receiver.username} ({self.get_status_display()})"
 
 
+# Об'єднаний безпечний сигнал створення та оновлення профілю
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
+def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
     else:
-        Profile.objects.create(user=instance)
+        if hasattr(instance, 'profile'):
+            instance.profile.save()

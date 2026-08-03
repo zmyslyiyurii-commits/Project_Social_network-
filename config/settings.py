@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'home',
+    # 'snaps',
+    'SnapPage',
 ]
 
 MIDDLEWARE = [
@@ -132,4 +134,4 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
-LOGIN_REDIRECT_URL = 'openhome'
+LOGIN_REDIRECT_URL = 'SnapPage:openhome'

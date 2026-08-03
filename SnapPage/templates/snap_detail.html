@@ -1,0 +1,23 @@
+{% load static %}
+<div class="flex flex-col items-center justify-center h-full w-full p-6 text-center bg-[#1e1e1e]">
+    <!-- Вміст снапа -->
+    <div class="relative max-w-md max-h-[70vh] rounded-2xl overflow-hidden shadow-2xl border border-[#333] bg-[#121212] p-2 flex items-center justify-center">
+        {% if snap.media_file %}
+            <!-- Перевіряємо за розширенням файла: відео чи картинка -->
+            {% if ".mp4" in snap.media_file.url|lower or ".webm" in snap.media_file.url|lower or ".mov" in snap.media_file.url|lower %}
+                <video src="{{ snap.media_file.url }}" controls autoplay class="max-h-[60vh] w-auto rounded-xl"></video>
+            {% else %}
+                <img src="{{ snap.media_file.url }}" alt="Snap Content" class="max-h-[60vh] w-auto rounded-xl object-contain">
+            {% endif %}
+        {% else %}
+            <div class="p-8 text-gray-400 text-sm">
+                Медіафайл відсутній
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Автоматично закриває снап через duration з моделі (або за замовчуванням 5 секунд)
+    runSilentSnapTimer({{ snap.duration|default:5 }});
+</script>

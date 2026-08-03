@@ -15,9 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 # Імпортуємо нові класи-в'юшки замість старих функцій
-from home.views import HomeView, OpenHomeView
+from home.views import HomeView
 from users.views import RegisterView, CustomLoginView, ProfileView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -26,7 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Головна сторінка сайту
     path('', HomeView.as_view(), name='home'),
-    path('openhome/', OpenHomeView.as_view(), name='openhome'),
+    path('', include('SnapPage.urls')),
     # Авторизація та профілі
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomLoginView.as_view(), name='login'),
