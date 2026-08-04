@@ -1,23 +1,49 @@
-function openSnap(url, snapId) {
+ // Змінна для зберігання активного таймера
+let activeSnapTimeout = null;
+
+function openSnap(url, snapId, status) {
+    // 1. Якщо снап вже відкрито (через атрибут або стан) — блокуємо повторний запит
+    if (status === 'opened') {
+        console.log('Снап уже переглянуто, повторне відкриття заблоковано.');
+        return; 
+    }
+
     const mainContent = document.getElementById('main-content');
-    
+    if (!mainContent) return;
+
+    // 2. Індикація завантаження
     mainContent.innerHTML = `
         <div class="flex items-center justify-center h-full text-gray-400">
             <p class="animate-pulse">Завантаження...</p>
         </div>
     `;
 
+    // 3. Запит на сервер
     fetch(url)
         .then(response => {
+            // Якщо сервер спробував зробити редірект (наприклад, на home)
+            if (response.redirected) {
+                throw new Error('Сервер повернув редірект замість картки снапу.');
+            }
+            // Якщо views.py повернув 403 Forbidden (снап вже в статусі 'opened' в БД)
+            if (response.status === 403) {
+                throw new Error('Цей снап уже був переглянутый.');
+            }
             if (!response.ok) {
                 throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
             }
             return response.text();
         })
         .then(html => {
+            // Перевірка: якщо сервер раптом віддав повну HTML-сторінку замість фрагмента
+            if (html.includes('<!DOCTYPE html>') || html.includes('<aside')) {
+                throw new Error('Сервер повернув повну сторінку замість картки снапу.');
+            }
+
+            // Вставляємо HTML снапу в праву панель
             mainContent.innerHTML = html;
 
-            // Виконуємо вкладені теги <script> із завантаженого HTML
+            // 4. Динамічно виконуємо всі вкладені теги <script> (запускає runSilentSnapTimer)
             const scripts = mainContent.querySelectorAll('script');
             scripts.forEach(oldScript => {
                 const newScript = document.createElement('script');
@@ -26,18 +52,25 @@ function openSnap(url, snapId) {
                 oldScript.parentNode.replaceChild(newScript, oldScript);
             });
 
-            // Оновлюємо статус в лівій панелі на "Відкрито"
+            // 5. Оновлюємо іконку та статус у лівому списку
             const icon = document.getElementById(`snap-icon-${snapId}`);
             const label = document.getElementById(`status-label-${snapId}`);
+            const snapItem = document.getElementById(`snap-item-${snapId}`);
+
             if (icon && label) {
-                icon.className = "w-2.5 h-2.5 border-2 border-blue-500 rounded-sm inline-block mr-1";
+                icon.className = "w-2.5 h-2.5 border-2 border-blue-500 rounded-sm inline-block mr-1 bg-transparent";
                 label.innerText = "Відкрито";
+            }
+
+            // 6. Оновлюємо атрибут onclick у DOM, щоб наступні кліки без F5 одразу блокувалися
+            if (snapItem) {
+                snapItem.setAttribute('onclick', `openSnap('${url}', ${snapId}, 'opened')`);
             }
         })
         .catch(error => {
             console.error('Fetch error:', error);
             mainContent.innerHTML = `
-                <div class="text-center text-red-400 space-y-2">
+                <div class="text-center text-red-400 space-y-2 p-6">
                     <p class="font-semibold">Не вдалося завантажити снап.</p>
                     <p class="text-xs text-gray-500">${error.message}</p>
                 </div>
@@ -45,28 +78,30 @@ function openSnap(url, snapId) {
         });
 }
 
-// Змінна для зберігання таймера (щоб скидати, якщо користувач клікнув на інший снап раніше часу)
-let activeSnapTimeout = null;
-
 function runSilentSnapTimer(seconds) {
-    // Якщо вже був активний таймер — скасовуємо його
+    // Якщо вже був запущений таймер від попереднього снапу — скидаємо його
     if (activeSnapTimeout) {
         clearTimeout(activeSnapTimeout);
     }
 
-    // Перетворюємо секунди в мілісекунди
+    // Запускаємо новий таймер автоматичного закриття
     const ms = seconds * 1000;
-
-    // Запускаємо прихований таймер
     activeSnapTimeout = setTimeout(() => {
         closeSnap();
     }, ms);
 }
 
 function closeSnap() {
+    // Скасовуємо таймер, якщо снап закривається ручною кнопкою
+    if (activeSnapTimeout) {
+        clearTimeout(activeSnapTimeout);
+        activeSnapTimeout = null;
+    }
+
     const mainContent = document.getElementById('main-content');
+    if (!mainContent) return;
     
-    // Повертаємо початковий десктопний стан
+    // Повертаємо базовий десктопний стан правої панелі
     mainContent.innerHTML = `
         <div class="text-center space-y-4">
             <div class="w-24 h-24 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[#fffc00] mx-auto shadow-lg ring-4 ring-[#252525]">

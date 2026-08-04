@@ -1,7 +1,9 @@
 from django.views.generic import TemplateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Max
+from django.http import HttpResponseForbidden
+from django.db.models import Max, Q
 from users.models import Snap
+
 
 class OpenHomeView(LoginRequiredMixin, TemplateView):
     template_name = 'openhome.html'
@@ -17,7 +19,7 @@ class OpenHomeView(LoginRequiredMixin, TemplateView):
             .values_list('latest_id', flat=True)
         )
 
-        #  Отримуємо самі снапи по цих ID та сортуємо за датою
+        # Отримуємо самі снапи по цих ID та сортуємо за датою
         context['snaps'] = (
             Snap.objects.filter(id__in=latest_snap_ids)
             .select_related('sender')
@@ -32,12 +34,28 @@ class SnapDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'snap'
 
     def get_queryset(self):
-        return Snap.objects.filter(receiver=self.request.user)
+        # Дозволяємо доступ і отримувачу (receiver), і відправнику (sender)
+        return Snap.objects.filter(
+            Q(receiver=self.request.user) | Q(sender=self.request.user)
+        )
 
     def get_object(self, queryset=None):
         snap = super().get_object(queryset)
-        # Якщо снап був 'sent', при відкритті міняємо на 'opened'
-        if snap.status == 'sent':
+
+        # 1. Якщо це отримувач і снап ВЖЕ був переглянутий раніше -> блокуємо (403)
+        if snap.status == 'opened' and self.request.user == snap.receiver:
+            raise PermissionError("Цей снап уже був переглянутий.")
+
+        # 2. Якщо це отримувач і снап ще НЕ переглянутий ('sent') -> змінюємо статус на 'opened'
+        if snap.status == 'sent' and self.request.user == snap.receiver:
             snap.status = 'opened'
             snap.save(update_fields=['status'])
+
         return snap
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except PermissionError:
+            # Обробляємо виключення та віддаємо 403 HTTP статус для JS
+            return HttpResponseForbidden("Цей снап уже був переглянутий.")
