@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Profile, Friendship, Snap
+from .models import User, Profile, Friendship, Snap, Story
 
 
 # Вбудовуємо Профіль прямо у сторінку Користувача в адмінці
@@ -44,3 +44,11 @@ class SnapAdmin(admin.ModelAdmin):
     list_display = ('sender', 'receiver', 'status', 'duration', 'media_file', 'created_at')
     list_filter = ('status', 'created_at')
     search_fields = ('sender__username', 'receiver__username')
+
+
+# Адмінка для історій
+@admin.register(Story)
+class StoryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'media_file', 'created_at', 'is_active')
+    list_filter = ('created_at',)
+    search_fields = ('user__username',)
