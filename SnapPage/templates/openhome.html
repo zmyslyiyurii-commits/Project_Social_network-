@@ -32,9 +32,9 @@
                         </button>
 
                         <!-- Додати історію (+) -->
-                        <a href="{% url 'SnapPage:create_story' %}" title="Додати історію" class="w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300 hover:text-white">
+                        <button type="button" onclick="openCreateStory()" title="Додати історію" class="w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300 hover:text-white">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </a>
+                        </button>
 
                         <!-- Додати друга -->
                         <button class="w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300" title="Додати друга">
@@ -67,7 +67,6 @@
                         <!-- Блок аватарки -->
                         <div class="relative flex-shrink-0 w-12 h-12 flex items-center justify-center">
                             {% if snap.sender.has_active_story %}
-                                <!-- Якщо є історія — рамка та перехід на історію -->
                                 <a href="{% url 'SnapPage:user_story_detail' snap.sender.id %}" 
                                    onclick="event.stopPropagation();"
                                    class="w-full h-full p-[2px] rounded-full ring-2 ring-purple-600 hover:ring-purple-400 transition flex items-center justify-center"
@@ -82,7 +81,6 @@
                                     </div>
                                 </a>
                             {% else %}
-                                <!-- Звичайна аватарка з кліком для відкриття снапу -->
                                 <div onclick="openSnap('{% url 'SnapPage:snap_detail' snap.pk %}', {{ snap.pk }}, '{{ snap.status }}')" 
                                      class="w-full h-full rounded-full bg-yellow-500 flex items-center justify-center text-lg font-bold text-black uppercase overflow-hidden relative cursor-pointer">
                                     <span>{{ snap.sender.username|slice:":1" }}</span>
@@ -95,12 +93,12 @@
                             {% endif %}
                         </div>
 
-                        <!-- Текстова зона (клік відкриває снап) -->
+                        <!-- Текстова зона -->
                         <div onclick="openSnap('{% url 'SnapPage:snap_detail' snap.pk %}', {{ snap.pk }}, '{{ snap.status }}')" 
                              class="cursor-pointer flex-1 min-w-0 pr-2">
                             <h4 class="font-semibold text-sm truncate">{{ snap.sender.username }}</h4>
                             <p class="text-xs text-gray-400 flex items-center" id="snap-status-text-{{ snap.pk }}">
-                                <span id="snap-icon-{{ snap.pk }}" class="w-2.5 h-2.5 {% if snap.status == 'sent' %}bg-blue-500{% else %}border-2 border-blue-500{% endif %} rounded-sm inline-block mr-1 flex-shrink-0"></span> 
+                                <span id="snap-icon-{{ snap.pk }}" class="w-2.5 h-2.5 {% if snap.status == 'sent' %}bg-blue-500{% else %}border-2 border-blue-500 bg-transparent{% endif %} rounded-sm inline-block mr-1 flex-shrink-0"></span> 
                                 <span id="status-label-{{ snap.pk }}">{% if snap.status == 'sent' %}Новий снап{% else %}Відкрито{% endif %}</span> • {{ snap.created_at|timesince }}
                             </p>
                         </div>
@@ -139,8 +137,8 @@
             </nav>
         </aside>
 
-        <!-- ================= ПРАВА ЧАСТИНА ================= -->
-        <main id="main-content" class="flex-1 h-full bg-[#1e1e1e] flex flex-col items-center justify-center relative">
+        <!-- ================= ПРАВА ЧАСТИНА (ГОЛОВНА ПАНЕЛЬ) ================= -->
+        <main id="main-content" class="flex-1 h-full bg-[#1e1e1e] flex flex-col items-center justify-center relative p-6">
             <div class="text-center space-y-4">
                 <div class="w-24 h-24 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[#fffc00] mx-auto shadow-lg ring-4 ring-[#252525]">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -150,6 +148,35 @@
             </div>
         </main>
     </div>
+
+    <!-- ================= ШАБЛОН ФОРМИ СТВОРЕННЯ ІСТОРІЇ ================= -->
+    <template id="story-form-template">
+        <div class="bg-[#1e1e1e] border border-[#2f2f2f] rounded-2xl w-full max-w-md p-6 relative text-white shadow-2xl animate-fade-in">
+            <button type="button" onclick="resetMainContent()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            <h2 class="text-xl font-bold mb-4 text-center">Створити історію</h2>
+
+            <form action="{% url 'SnapPage:create_story' %}" method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex flex-col items-center justify-center border-2 border-dashed border-[#3d3d3d] hover:border-[#fffc00] rounded-xl p-8 transition cursor-pointer bg-[#121212]" onclick="document.getElementById('id_media_file').click();">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="storyFileName" class="text-sm text-gray-400 font-medium text-center truncate max-w-xs">Натисніть, щоб обрати фото або відео</span>
+                    <input type="file" name="media_file" id="id_media_file" accept="image/*,video/*" class="hidden" required onchange="updateStoryFileName(this)">
+                </div>
+
+                <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="resetMainContent()" class="flex-1 py-2.5 rounded-xl bg-[#2f2f2f] hover:bg-[#3d3d3d] text-sm font-semibold transition">
+                        Скасувати
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#fffc00] hover:bg-[#e6e300] text-black text-sm font-bold transition">
+                        Опублікувати
+                    </button>
+                </div>
+            </form>
+        </div>
+    </template>
 
     <script src="{% static 'openhome.js' %}"></script>
 </body>
