@@ -1,10 +1,37 @@
 let activeSnapTimeout = null;
 
+// Отримання CSRF-токена з cookie для AJAX-запитів
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Очищення активного таймера снапу
+function clearSnapTimer() {
+    if (activeSnapTimeout) {
+        clearTimeout(activeSnapTimeout);
+        activeSnapTimeout = null;
+    }
+}
+
+// Відкриття та AJAX-завантаження вмісту снапу
 function openSnap(url, snapId, status) {
     if (status === 'opened') {
         console.log('Снап уже переглянуто.');
         return; 
     }
+
+    clearSnapTimer();
 
     const mainContent = document.getElementById('main-content');
     if (!mainContent) return;
@@ -29,14 +56,10 @@ function openSnap(url, snapId, status) {
 
             mainContent.innerHTML = html;
 
-            const scripts = mainContent.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
+            // Виконання inline-скриптів із завантаженого шаблону
+            executeScripts(mainContent);
 
+            // Оновлення індикатора стану в списку
             const icon = document.getElementById(`snap-icon-${snapId}`);
             const label = document.getElementById(`status-label-${snapId}`);
             const snapItem = document.getElementById(`snap-item-${snapId}`);
@@ -61,27 +84,23 @@ function openSnap(url, snapId, status) {
         });
 }
 
+// Запуск таймера автоматичного закриття снапу
 function runSilentSnapTimer(seconds) {
-    if (activeSnapTimeout) {
-        clearTimeout(activeSnapTimeout);
-    }
-
+    clearSnapTimer();
     const ms = seconds * 1000;
     activeSnapTimeout = setTimeout(() => {
         closeSnap();
     }, ms);
 }
 
+// Закриття снапу
 function closeSnap() {
     resetMainContent();
 }
 
 // Повертає стандартне привітання в праву панель
 function resetMainContent() {
-    if (activeSnapTimeout) {
-        clearTimeout(activeSnapTimeout);
-        activeSnapTimeout = null;
-    }
+    clearSnapTimer();
 
     const mainContent = document.getElementById('main-content');
     if (!mainContent) return;
@@ -97,8 +116,20 @@ function resetMainContent() {
     `;
 }
 
-// Відкриває форму створення історії безпосередньо в правій панелі
+// Відкриває форму створення снапу
+function openCreateSnap() {
+    clearSnapTimer();
+    const mainContent = document.getElementById('main-content');
+    const template = document.getElementById('snap-form-template');
+    if (!mainContent || !template) return;
+
+    mainContent.innerHTML = '';
+    mainContent.appendChild(template.content.cloneNode(true));
+}
+
+// Відкриває форму створення історії
 function openCreateStory() {
+    clearSnapTimer();
     const mainContent = document.getElementById('main-content');
     const template = document.getElementById('story-form-template');
     if (!mainContent || !template) return;
@@ -107,10 +138,143 @@ function openCreateStory() {
     mainContent.appendChild(template.content.cloneNode(true));
 }
 
-// Оновлює назву обраного файлу
-function updateStoryFileName(input) {
-    const label = document.getElementById('storyFileName');
-    if (input.files && input.files[0]) {
+// Оновлює назву обраного файлу для снапу
+function updateSnapFileName(input) {
+    const label = document.getElementById('snapFileName');
+    if (label && input.files && input.files[0]) {
         label.textContent = input.files[0].name;
     }
+}
+
+// Оновлює назву обраного файлу для історії
+function updateStoryFileName(input) {
+    const label = document.getElementById('storyFileName');
+    if (label && input.files && input.files[0]) {
+        label.textContent = input.files[0].name;
+    }
+}
+
+// Допоміжна функція перезапуску скриптів після AJAX-встави HTML
+function executeScripts(container) {
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+}
+
+// ================= СИСТЕМА ДОДАВАННЯ ДРУЗІВ =================
+
+// Відкриття панелі друзів у правому блоці
+function openAddFriendsPanel() {
+    clearSnapTimer();
+
+    const mainContent = document.getElementById('main-content');
+    const addBtn = document.getElementById('add-friends-btn');
+    if (!mainContent) return;
+
+    const url = addBtn ? addBtn.getAttribute('data-url') : '/friends/add/';
+
+    mainContent.innerHTML = `
+        <div class="flex items-center justify-center h-full text-gray-400">
+            <p class="animate-pulse">Завантаження панелі друзів...</p>
+        </div>
+    `;
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            return response.text();
+        })
+        .then(html => {
+            mainContent.innerHTML = html;
+            executeScripts(mainContent);
+        })
+        .catch(error => {
+            console.error('Error loading add friends panel:', error);
+            mainContent.innerHTML = `
+                <div class="text-center text-red-400 p-6">
+                    <p class="font-semibold">Не вдалося завантажити панель друзів.</p>
+                </div>
+            `;
+        });
+}
+
+// Надіслати запит у друзі
+function sendFriendRequest(userId, btnElement) {
+    const csrftoken = getCookie('csrftoken');
+    btnElement.disabled = true;
+    btnElement.innerText = 'Надсилання...';
+
+    fetch(`/friends/send/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            btnElement.innerText = 'Запит надіслано';
+            btnElement.className = 'px-3 py-1.5 rounded-full bg-gray-700 text-xs text-gray-300 cursor-not-allowed';
+        } else {
+            alert(data.message || 'Помилка надсилання');
+            btnElement.disabled = false;
+            btnElement.innerText = '+ Додати';
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        btnElement.disabled = false;
+        btnElement.innerText = '+ Додати';
+    });
+}
+
+// Прийняти запит
+function acceptFriendRequest(requestId, btnElement) {
+    const csrftoken = getCookie('csrftoken');
+
+    fetch(`/friends/accept/${requestId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const card = document.getElementById(`request-card-${requestId}`);
+            if (card) card.remove();
+        } else {
+            alert(data.message || 'Помилка виконання');
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+// Відхилити запит
+function rejectFriendRequest(requestId, btnElement) {
+    const csrftoken = getCookie('csrftoken');
+
+    fetch(`/friends/reject/${requestId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const card = document.getElementById(`request-card-${requestId}`);
+            if (card) card.remove();
+        } else {
+            alert(data.message || 'Помилка виконання');
+        }
+    })
+    .catch(err => console.error(err));
 }

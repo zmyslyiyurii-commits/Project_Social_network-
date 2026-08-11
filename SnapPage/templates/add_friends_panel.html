@@ -1,0 +1,90 @@
+<div class="w-full max-w-lg bg-[#121212] border border-[#2f2f2f] rounded-2xl p-6 text-white shadow-2xl animate-fade-in relative max-h-[85vh] flex flex-col">
+    <!-- Шапка панелі -->
+    <div class="flex items-center justify-between pb-4 border-b border-[#262626]">
+        <h2 class="text-xl font-bold tracking-wide flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="text-[#fffc00]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+            <span>Додати друзів</span>
+        </h2>
+        <button type="button" onclick="resetMainContent()" class="text-gray-400 hover:text-white transition p-1 rounded-full hover:bg-[#2f2f2f]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+
+    <!-- Пошук користувачів -->
+    <div class="my-4 relative">
+        <input type="text" id="friend-search-input" placeholder="Пошук за іменем..." class="w-full bg-[#1e1e1e] border border-[#2f2f2f] focus:border-[#fffc00] rounded-xl px-4 py-2.5 pl-10 text-sm text-white placeholder-gray-500 focus:outline-none transition">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-3 text-gray-500"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
+    </div>
+
+    <!-- Основний контент із прокруткою -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-6 pr-1">
+        
+        <!-- СЕКЦІЯ ВХІДНИХ ЗАПИТІВ -->
+        <div id="pending-requests-section" class="{% if not pending_requests %}hidden{% endif %}">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Запити у друзі (<span id="pending-requests-count-title">{{ pending_requests|length }}</span>)
+            </h3>
+            <div class="space-y-2" id="pending-requests-list">
+                {% for req in pending_requests %}
+                <div id="request-card-{{ req.id }}" class="flex items-center justify-between p-3 bg-[#1e1e1e] border border-[#262626] rounded-xl hover:border-[#3d3d3d] transition" data-username="{{ req.sender.username|lower }}">
+                    <div class="flex items-center space-x-3 min-w-0 flex-1">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center font-bold text-black uppercase overflow-hidden relative flex-shrink-0">
+                            <span>{{ req.sender.username|slice:":1" }}</span>
+                            {% if req.sender.profile.avatar %}
+                                <img src="{{ req.sender.profile.avatar.url }}" class="absolute inset-0 w-full h-full object-cover">
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0 flex-1 pr-2">
+                            <p class="font-semibold text-sm truncate">{{ req.sender.username }}</p>
+                            <p class="text-xs text-gray-400 truncate">Хоче додати вас у друзі</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        <button type="button" onclick="acceptFriendRequest({{ req.id }}, this)" class="px-3.5 py-1.5 bg-[#fffc00] hover:bg-[#e6e300] text-black font-bold text-xs rounded-full transition">
+                            Прийняти
+                        </button>
+                        <button type="button" onclick="rejectFriendRequest({{ req.id }}, this)" class="px-3 py-1.5 bg-[#2f2f2f] hover:bg-[#3d3d3d] text-gray-300 font-semibold text-xs rounded-full transition">
+                            Відхилити
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- СЕКЦІЯ РЕКОМЕНДАЦІЙ ТА ПОШУКУ -->
+        <div>
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Швидке додавання</h3>
+            <div class="space-y-2" id="suggested-users-list">
+                {% for user_item in suggested_users %}
+                <div class="user-search-item flex items-center justify-between p-3 bg-[#1e1e1e] border border-[#262626] rounded-xl hover:border-[#3d3d3d] transition" data-username="{{ user_item.username|lower }}">
+                    <div class="flex items-center space-x-3 min-w-0 flex-1">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center font-bold text-black uppercase overflow-hidden relative flex-shrink-0">
+                            <span>{{ user_item.username|slice:":1" }}</span>
+                            {% if user_item.profile.avatar %}
+                                <img src="{{ user_item.profile.avatar.url }}" class="absolute inset-0 w-full h-full object-cover">
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0 flex-1 pr-2">
+                            <p class="font-semibold text-sm truncate">{{ user_item.username }}</p>
+                            <p class="text-xs text-gray-400">Рекомендація</p>
+                        </div>
+                    </div>
+                    {% if user_item.id in sent_request_user_ids %}
+                        <button type="button" disabled class="px-3.5 py-1.5 bg-[#2f2f2f] text-gray-400 font-semibold text-xs rounded-full cursor-not-allowed flex-shrink-0">
+                            Надіслано
+                        </button>
+                    {% else %}
+                        <button type="button" onclick="sendFriendRequest({{ user_item.id }}, this)" class="px-3.5 py-1.5 bg-[#2f2f2f] hover:bg-[#3d3d3d] hover:text-[#fffc00] text-white font-semibold text-xs rounded-full transition flex-shrink-0">
+                            + Додати
+                        </button>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-xs text-gray-500 text-center py-6">Немає нових користувачів для рекомендації</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
