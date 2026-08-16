@@ -36,8 +36,8 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </button>
 
-                        <!-- Додати друга (із лічильником запитів) -->
-                        <button type="button" onclick="openAddFriendsPanel()" data-url="{% url 'SnapPage:add_friends_panel' %}" id="add-friends-btn" class="relative w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300" title="Додати друга">
+                        <!-- Додати друга (верхня кнопка) -->
+                        <button type="button" onclick="openAddFriendsPanel(this)" data-url="{% url 'SnapPage:add_friends_panel' %}" id="add-friends-btn" class="relative w-10 h-10 rounded-full bg-[#2f2f2f] hover:bg-[#3d3d3d] flex items-center justify-center transition text-gray-300" title="Додати друга">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
                             {% if pending_requests_count > 0 %}
                                 <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#121212]">
@@ -62,11 +62,12 @@
                 </div>
             </div>
 
-            <!-- СПИСОК ЧАТІВ -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+            <!-- СПИСОК ЧАТІВ (ДОДАНО id="chats-list") -->
+            <div id="chats-list" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
                 {% for chat in chats %}
                 <div id="chat-item-{{ chat.friend.id }}" 
-                     class="flex items-center justify-between p-3 rounded-xl hover:bg-[#1c1c1c] transition group">
+                     {% if chat.latest_snap %}onclick="openSnap('{% url 'SnapPage:snap_detail' chat.latest_snap.pk %}', {{ chat.latest_snap.pk }}, '{{ chat.latest_snap.status }}')"{% endif %}
+                     class="flex items-center justify-between p-3 rounded-xl hover:bg-[#1c1c1c] transition group cursor-pointer">
                     
                     <div class="flex items-center space-x-3 flex-1 min-w-0">
                         <!-- Блок аватарки -->
@@ -86,8 +87,7 @@
                                     </div>
                                 </a>
                             {% else %}
-                                <div {% if chat.latest_snap %}onclick="openSnap('{% url 'SnapPage:snap_detail' chat.latest_snap.pk %}', {{ chat.latest_snap.pk }}, '{{ chat.latest_snap.status }}')"{% endif %}
-                                     class="w-full h-full rounded-full bg-yellow-500 flex items-center justify-center text-lg font-bold text-black uppercase overflow-hidden relative cursor-pointer">
+                                <div class="w-full h-full rounded-full bg-yellow-500 flex items-center justify-center text-lg font-bold text-black uppercase overflow-hidden relative">
                                     <span>{{ chat.friend.username|slice:":1" }}</span>
                                     {% if chat.friend.profile.avatar %}
                                         <img src="{{ chat.friend.profile.avatar.url }}" 
@@ -99,8 +99,7 @@
                         </div>
 
                         <!-- Текстова зона -->
-                        <div {% if chat.latest_snap %}onclick="openSnap('{% url 'SnapPage:snap_detail' chat.latest_snap.pk %}', {{ chat.latest_snap.pk }}, '{{ chat.latest_snap.status }}')"{% endif %}
-                             class="cursor-pointer flex-1 min-w-0 pr-2">
+                        <div class="flex-1 min-w-0 pr-2">
                             <h4 class="font-semibold text-sm truncate">{{ chat.friend.username }}</h4>
                             <p class="text-xs text-gray-400 flex items-center" id="chat-status-text-{{ chat.friend.id }}">
                                 {% if chat.latest_snap %}
@@ -143,7 +142,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
                 </button>
                 <!-- Кнопка додавання друзів у нижньому меню -->
-                <button type="button" onclick="openAddFriendsPanel()" class="flex flex-col items-center justify-center flex-1 py-1 hover:text-white transition relative" title="Додати друга">
+                <button type="button" onclick="openAddFriendsPanel(this)" data-url="{% url 'SnapPage:add_friends_panel' %}" class="flex flex-col items-center justify-center flex-1 py-1 hover:text-white transition relative" title="Додати друга">
                     {% if pending_requests_count > 0 %}
                         <span class="absolute top-1.5 right-6 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-[#121212]">
                             {{ pending_requests_count }}
@@ -236,6 +235,6 @@
     </template>
 
     <script src="{% static 'openhome.js' %}"></script>
-    <script src="{% static 'add_friends_panel.js' %}"></script>
+    <script src="{% static 'add_friends_panel.js' %}?v=3"></script>
 </body>
 </html>

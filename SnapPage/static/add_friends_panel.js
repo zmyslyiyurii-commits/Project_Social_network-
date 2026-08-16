@@ -1,5 +1,5 @@
 // ==========================================
-// 1. Отримання CSRF-токена (Cookie / DOM)
+// 1. Отримання CSRF-токена
 // ==========================================
 function getCsrfToken() {
     let cookieValue = null;
@@ -21,7 +21,7 @@ function getCsrfToken() {
 }
 
 // ==========================================
-// 2. Логіка фільтрації пошуку
+// 2. Фільтрація пошуку
 // ==========================================
 function runFriendsFilter(query) {
     const filter = (query || '').toLowerCase().trim();
@@ -44,13 +44,11 @@ function runFriendsFilter(query) {
     });
 }
 
-// Глобальна функція фільтрації для прямого виклику
 window.filterFriendsList = function() {
     const input = document.getElementById('friend-search-input');
     if (input) runFriendsFilter(input.value);
 };
 
-// Автоматичне слухання введення у полі пошуку
 document.addEventListener('input', function (e) {
     if (e.target && e.target.id === 'friend-search-input') {
         runFriendsFilter(e.target.value);
@@ -58,11 +56,10 @@ document.addEventListener('input', function (e) {
 });
 
 // ==========================================
-// 3. Відправка запиту у друзі
+// 3. Надіслати запит
 // ==========================================
 window.sendFriendRequest = function(userId, btnElement) {
     if (!btnElement) return;
-    
     const originalText = btnElement.textContent;
     btnElement.disabled = true;
 
@@ -73,10 +70,7 @@ window.sendFriendRequest = function(userId, btnElement) {
             'Content-Type': 'application/json'
         }
     })
-    .then(async res => {
-        if (!res.ok) throw new Error(`Помилка сервера: ${res.status}`);
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
         if (data.status === 'success') {
             btnElement.textContent = 'Надіслано';
@@ -84,24 +78,21 @@ window.sendFriendRequest = function(userId, btnElement) {
         } else {
             btnElement.disabled = false;
             btnElement.textContent = originalText;
-            alert(data.message || 'Не вдалося надіслати запит');
+            alert(data.message || 'Помилка');
         }
     })
     .catch(err => {
-        console.error('sendFriendRequest error:', err);
         btnElement.disabled = false;
         btnElement.textContent = originalText;
-        alert('Помилка виконання: ' + err.message);
     });
 };
 
 // ==========================================
-// 4. Прийняття запиту у друзі
+// 4. Прийняти запит
 // ==========================================
 window.acceptFriendRequest = function(requestId, btnElement) {
     if (!btnElement) return;
     
-    const originalText = btnElement.textContent;
     btnElement.disabled = true;
     btnElement.textContent = '...';
 
@@ -112,10 +103,7 @@ window.acceptFriendRequest = function(requestId, btnElement) {
             'Content-Type': 'application/json'
         }
     })
-    .then(async res => {
-        if (!res.ok) throw new Error(`Помилка сервера: ${res.status}`);
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
         if (data.status === 'success') {
             const card = document.getElementById(`request-card-${requestId}`);
@@ -129,25 +117,22 @@ window.acceptFriendRequest = function(requestId, btnElement) {
             }
         } else {
             btnElement.disabled = false;
-            btnElement.textContent = originalText;
-            alert(data.message || 'Не вдалося прийняти запит');
+            btnElement.textContent = 'Прийняти';
+            alert(data.message || 'Помилка прийняття');
         }
     })
     .catch(err => {
-        console.error('acceptFriendRequest error:', err);
+        console.error('Error:', err);
         btnElement.disabled = false;
-        btnElement.textContent = originalText;
-        alert('Помилка виконання: ' + err.message);
+        btnElement.textContent = 'Прийняти';
     });
 };
 
 // ==========================================
-// 5. Відхилення запиту у друзі
+// 5. Відхилити запит
 // ==========================================
 window.rejectFriendRequest = function(requestId, btnElement) {
     if (!btnElement) return;
-    
-    const originalText = btnElement.textContent;
     btnElement.disabled = true;
 
     fetch(`/friends/reject/${requestId}/`, {
@@ -157,10 +142,7 @@ window.rejectFriendRequest = function(requestId, btnElement) {
             'Content-Type': 'application/json'
         }
     })
-    .then(async res => {
-        if (!res.ok) throw new Error(`Помилка сервера: ${res.status}`);
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
         if (data.status === 'success') {
             const card = document.getElementById(`request-card-${requestId}`);
@@ -170,31 +152,15 @@ window.rejectFriendRequest = function(requestId, btnElement) {
             window.updatePendingBadge(remainingCount);
         } else {
             btnElement.disabled = false;
-            btnElement.textContent = originalText;
-            alert(data.message || 'Не вдалося відхилити запит');
         }
-    })
-    .catch(err => {
-        console.error('rejectFriendRequest error:', err);
-        btnElement.disabled = false;
-        btnElement.textContent = originalText;
-        alert('Помилка виконання: ' + err.message);
     });
 };
 
 // ==========================================
-// 6. Оновлення бейджів та лічильників
+// 6. Оновлення бейджів сповіщень
 // ==========================================
 window.updatePendingBadge = function(count) {
-    const titleCount = document.getElementById('pending-requests-count-title');
-    if (titleCount) titleCount.textContent = count;
-
-    const section = document.getElementById('pending-requests-section');
-    if (section && count === 0) {
-        section.classList.add('hidden');
-    }
-
-    const badges = document.querySelectorAll('.pending-badge, #pending-badge, [data-pending-count]');
+    const badges = document.querySelectorAll('#add-friends-btn span, nav span');
     badges.forEach(badge => {
         if (count > 0) {
             badge.textContent = count;
@@ -206,31 +172,43 @@ window.updatePendingBadge = function(count) {
 };
 
 // ==========================================
-// 7. Додавання нового друга в список чатів
+// 7. Додавання друга у ліву панель 
 // ==========================================
 window.addFriendToChatsList = function(friend) {
-    const chatsContainer = document.querySelector('#chats-container, .chats-container, #chats-list');
+    const chatsContainer = document.getElementById('chats-list');
     if (!chatsContainer) return;
 
     if (document.getElementById(`chat-item-${friend.id}`)) return;
 
-    const avatarHtml = friend.avatar_url
-        ? `<img src="${friend.avatar_url}" class="w-full h-full object-cover rounded-full">`
-        : `<span>${friend.username.charAt(0).toUpperCase()}</span>`;
+    // Видаляємо блок "У вас немає чатів", якщо він є
+    const emptyPlaceholder = chatsContainer.querySelector('.text-center');
+    if (emptyPlaceholder) emptyPlaceholder.remove();
+
+    const firstLetter = friend.username ? friend.username.charAt(0).toUpperCase() : '?';
+    const avatarImgHtml = friend.avatar_url 
+        ? `<img src="${friend.avatar_url}" onerror="this.remove()" class="absolute inset-0 w-full h-full object-cover rounded-full">`
+        : '';
 
     const newChatHtml = `
-        <div id="chat-item-${friend.id}" class="flex items-center justify-between p-3 bg-[#1e1e1e] hover:bg-[#282828] border border-[#262626] rounded-xl transition cursor-pointer">
-            <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-11 h-11 rounded-full bg-yellow-500 flex items-center justify-center font-bold text-black uppercase flex-shrink-0 relative">
-                    ${avatarHtml}
+        <div id="chat-item-${friend.id}" class="flex items-center justify-between p-3 rounded-xl hover:bg-[#1c1c1c] transition group cursor-pointer">
+            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                <div class="relative flex-shrink-0 w-12 h-12 flex items-center justify-center">
+                    <div class="w-full h-full rounded-full bg-yellow-500 flex items-center justify-center text-lg font-bold text-black uppercase overflow-hidden relative">
+                        <span>${firstLetter}</span>
+                        ${avatarImgHtml}
+                    </div>
                 </div>
-                <div class="min-w-0">
-                    <p class="font-bold text-sm text-white truncate">${friend.username}</p>
-                    <p class="text-xs text-gray-400 truncate">Новий друг</p>
+
+                <div class="flex-1 min-w-0 pr-2">
+                    <h4 class="font-semibold text-sm truncate">${friend.username}</h4>
+                    <p class="text-xs text-gray-400 flex items-center" id="chat-status-text-${friend.id}">
+                        <span class="w-2 h-2 rounded-full bg-green-500 inline-block mr-1.5 flex-shrink-0"></span>
+                        <span>Новий друг • Розпочніть спілкування</span>
+                    </p>
                 </div>
             </div>
         </div>
     `;
 
-    chatsContainer.insertAdjacentHTML('afterbegin', newChatHtml);
+    chatsContainer.insertAdjacentHTML('beforeend', newChatHtml);
 };

@@ -150,6 +150,7 @@ def accept_friend_request(request, request_id):
         'message': 'Запит прийнято',
         'request_id': request_id,
         'remaining_count': remaining_requests_count,
+        'reload': True,  
         'friend': {
             'id': friend.id,
             'username': friend.username,
