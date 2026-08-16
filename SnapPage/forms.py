@@ -40,10 +40,7 @@ class SnapForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if user:
-            friends = user.get_friends()
-            # Якщо є підтверджені друзі — виводимо тільки їх, 
-            # якщо друзів немає — виводимо усіх користувачів (окрім себе) для зручності тестування
-            if friends.exists():
-                self.fields['receiver'].queryset = friends
-            else:
-                self.fields['receiver'].queryset = User.objects.exclude(id=user.id)
+            # Виводимо строго лише підтверджених друзів користувача
+            self.fields['receiver'].queryset = user.get_friends()
+        else:
+            self.fields['receiver'].queryset = User.objects.none()
