@@ -13,7 +13,7 @@ from .models import Profile, User
 class RegisterView(CreateView):
     form_class = CustomUserCreationForm
     template_name = 'register.html'
-    success_url = reverse_lazy('snappage:openhome')  # Куди перенаправити після успішної реєстрації
+    success_url = reverse_lazy('SnapPage:openhome')  # Куди перенаправити після успішної реєстрації (виправлено регістр)
 
     def form_valid(self, form):
         # Цей метод викликається, коли форма успішно пройшла валідацію

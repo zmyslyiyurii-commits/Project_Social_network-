@@ -16,7 +16,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-# Імпортуємо нові класи-в'юшки замість старих функцій
 from home.views import HomeView
 from users.views import RegisterView, CustomLoginView, ProfileView
 from django.conf import settings
@@ -26,7 +25,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Головна сторінка сайту
     path('', HomeView.as_view(), name='home'),
-    path('', include('SnapPage.urls')),
+    # Маршрути додатка SnapPage з явно вказаним namespace
+    path('', include(('SnapPage.urls', 'SnapPage'), namespace='SnapPage')),
     # Авторизація та профілі
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomLoginView.as_view(), name='login'),
