@@ -62,11 +62,11 @@
                 </div>
             </div>
 
-            <!-- СПИСОК ЧАТІВ (ДОДАНО id="chats-list") -->
+            <!-- СПИСОК ЧАТІВ -->
             <div id="chats-list" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
                 {% for chat in chats %}
                 <div id="chat-item-{{ chat.friend.id }}" 
-                     {% if chat.latest_snap %}onclick="openSnap('{% url 'SnapPage:snap_detail' chat.latest_snap.pk %}', {{ chat.latest_snap.pk }}, '{{ chat.latest_snap.status }}')"{% endif %}
+                     onclick="openChat({{ chat.friend.id }}, '{% url 'SnapPage:chat_detail' chat.friend.id %}')"
                      class="flex items-center justify-between p-3 rounded-xl hover:bg-[#1c1c1c] transition group cursor-pointer">
                     
                     <div class="flex items-center space-x-3 flex-1 min-w-0">
@@ -108,7 +108,9 @@
                                         <span>Надіслано</span>
                                     {% else %}
                                         <span class="w-2.5 h-2.5 {% if chat.latest_snap.status == 'sent' %}bg-blue-500{% else %}border-2 border-blue-500 bg-transparent{% endif %} rounded-sm inline-block mr-1 flex-shrink-0"></span>
-                                        <span>{% if chat.latest_snap.status == 'sent' %}Новий снап{% else %}Отримано{% endif %}</span>
+                                        <span {% if chat.latest_snap.status == 'sent' %}onclick="event.stopPropagation(); openSnap('{% url 'SnapPage:snap_detail' chat.latest_snap.pk %}', {{ chat.latest_snap.pk }}, '{{ chat.latest_snap.status }}')"{% endif %} class="hover:underline">
+                                            {% if chat.latest_snap.status == 'sent' %}Новий снап{% else %}Отримано{% endif %}
+                                        </span>
                                     {% endif %}
                                     <span class="ml-1">• {{ chat.latest_snap.created_at|timesince }}</span>
                                 {% else %}

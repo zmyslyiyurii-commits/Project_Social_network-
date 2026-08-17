@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from home.views import HomeView
-from users.views import RegisterView, CustomLoginView, ProfileView
+from users.views import RegisterView, CustomLoginView, ProfileView, send_message, get_messages, mark_messages_as_read, chat_detail
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -31,6 +31,12 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('profile/', ProfileView.as_view(), name='profile'),
+    
+    # Маршрути для роботи з повідомленнями та чатом
+    path('chat/<int:friend_id>/', chat_detail, name='chat_detail'),
+    path('messages/send/<int:recipient_id>/', send_message, name='send_message'),
+    path('messages/get/<int:user_id>/', get_messages, name='get_messages'),
+    path('messages/read/<int:sender_id>/', mark_messages_as_read, name='mark_messages_as_read'),
 ]
 # Обслуговування медіафайлів локально під час розробки
 if settings.DEBUG:

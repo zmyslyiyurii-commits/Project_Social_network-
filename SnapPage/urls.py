@@ -1,4 +1,5 @@
 from django.urls import path
+from users.views import chat_detail
 from .views import (
     OpenHomeView, 
     SnapDetailView, 
@@ -15,6 +16,11 @@ app_name = 'SnapPage'
 
 urlpatterns = [
     path('openhome/', OpenHomeView.as_view(), name='openhome'),
+    
+    # Чат
+    path('chat/<int:friend_id>/', chat_detail, name='chat_detail'),
+
+    # Снапи та історії
     path('snap/<int:pk>/', SnapDetailView.as_view(), name='snap_detail'),
     path('snap/create/', CreateSnapView.as_view(), name='create_snap'),
     path('story/create/', CreateStoryView.as_view(), name='create_story'),

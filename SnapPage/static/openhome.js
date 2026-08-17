@@ -24,6 +24,52 @@ function clearSnapTimer() {
     }
 }
 
+// ================= ВІДКРИТТЯ ЧАТУ =================
+function openChat(friendId, chatUrl) {
+    clearSnapTimer();
+
+    const mainContent = document.getElementById('main-content');
+    if (!mainContent) return;
+
+    // Відображення індикатора завантаження
+    mainContent.innerHTML = `
+        <div class="flex items-center justify-center h-full text-gray-400">
+            <p class="animate-pulse">Завантаження чату...</p>
+        </div>
+    `;
+
+    fetch(chatUrl, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        return response.text();
+    })
+    .then(html => {
+        mainContent.innerHTML = html;
+
+        // Виконання inline-скриптів із завантаженого шаблону чату
+        executeScripts(mainContent);
+
+        // Автоматичний скрол до останнього повідомлення, якщо є контейнер
+        const messagesContainer = mainContent.querySelector('#messages-container') || mainContent.querySelector('.messages-list');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    })
+    .catch(error => {
+        console.error('Помилка завантаження чату:', error);
+        mainContent.innerHTML = `
+            <div class="text-center text-red-400 space-y-2 p-6">
+                <p class="font-semibold">Не вдалося завантажити чат.</p>
+                <p class="text-xs text-gray-500">${error.message}</p>
+            </div>
+        `;
+    });
+}
+
 // Відкриття та AJAX-завантаження вмісту снапу
 function openSnap(url, snapId, status) {
     if (status === 'opened') {

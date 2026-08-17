@@ -90,9 +90,50 @@ class Snap(models.Model):
         verbose_name = "Снап"
         verbose_name_plural = "Снапи"
 
+    @property
+    def is_opened(self):
+        """Повертає True, якщо снап було переглянуто."""
+        return self.status == 'opened'
+
     def __str__(self):
         duration_str = f"{self.duration}s" if self.duration else "безлімітно"
         return f"Снап від {self.sender} до {self.receiver} (Час: {duration_str}) - {self.get_status_display()}"
+
+
+# Модель текстових повідомлень з підтримкою статусу перегляду
+class Message(models.Model):
+    sender = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='sent_messages',
+        verbose_name="Відправник"
+    )
+    recipient = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='received_messages',
+        verbose_name="Отримувач"
+    )
+    text = models.TextField(
+        verbose_name="Текст повідомлення"
+    )
+    is_read = models.BooleanField(
+        default=False, 
+        verbose_name="Статус перегляду"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Час відправки"
+    )
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = "Повідомлення"
+        verbose_name_plural = "Повідомлення"
+
+    def __str__(self):
+        status_str = "Прочитано" if self.is_read else "Не прочитано"
+        return f"Від {self.sender.username} до {self.recipient.username} ({status_str})"
 
 
 class Story(models.Model):
