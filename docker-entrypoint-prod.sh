@@ -3,9 +3,6 @@ set -e
 
 echo "Starting production deployment..."
 
-# Navigate to Django project directory (змінити якщо manage.py в іншій папці)
-cd restaur  # <-- ЗМІНИТИ НА НАЗВУ ТВОЄЇ ПАПКИ З manage.py
-
 echo "Running database migrations..."
 python manage.py migrate --noinput
 
@@ -13,7 +10,7 @@ echo "Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
 echo "Starting Gunicorn server..."
-exec gunicorn restaur.wsgi:application \
+exec gunicorn portfolio.wsgi:application \
     --bind 0.0.0.0:8000 \
     --workers 3 \
     --timeout 120 \
