@@ -3,9 +3,6 @@ set -e
 
 echo "Starting production deployment..."
 
-# Переходимо в папку network, де лежить manage.py
-cd network
-
 echo "Running database migrations..."
 python manage.py migrate --noinput
 
